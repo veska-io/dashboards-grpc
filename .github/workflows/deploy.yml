@@ -1,0 +1,44 @@
+name: Deploy
+
+on:
+  pull_request
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'main' || 'test' }}
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      
+    steps:
+        - uses: actions/checkout@v4
+        
+        - name: Google Auth
+          id: auth
+          uses: 'google-github-actions/auth@v2'
+          with:
+            token_format: 'access_token'
+            workload_identity_provider: '${{ secrets.DEPLOY_WID }}'
+            service_account: '${{ secrets.DEPLOY_SERVICE_ACCOUNT }}'
+        
+        - name: Docker Auth
+          id: docker-auth
+          uses: 'docker/login-action@v3'
+          with:
+            username: 'oauth2accesstoken'
+            password: '${{ steps.auth.outputs.access_token }}'
+            registry: '${{ secrets.ARTIFACT_REGISTRY }}'
+
+        - name: Build and Push Container
+          run: |-
+            docker build -t "${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:${{ github.sha }}" .
+            docker push "${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:${{ github.sha }}"
+        
+        - name: Deploy to Cloud Run
+          id: deploy
+          uses: 'google-github-actions/deploy-cloudrun@v2'
+          with:
+            service: dashboards-grpc
+            region: ${{ secrets.CLOUD_RUN_REGION }}
+            image: ${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:${{ github.sha }}
