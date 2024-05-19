@@ -32,8 +32,8 @@ jobs:
 
         - name: Build and Push Container
           run: |-
-            docker build -t "${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:${{ github.sha }}" .
-            docker push "${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:${{ github.sha }}"
+            docker build -t "${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" .
+            docker push "${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}"
         
         - name: Deploy to Cloud Run
           id: deploy
@@ -41,4 +41,4 @@ jobs:
           with:
             service: ${{ secrets.SERVICE_NAME }}
             region: ${{ secrets.CLOUD_RUN_REGION }}
-            image: ${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:${{ github.sha }}
+            image: ${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
