@@ -39,6 +39,6 @@ jobs:
           id: deploy
           uses: 'google-github-actions/deploy-cloudrun@v2'
           with:
-            service: dashboards-grpc
+            service: ${{ secrets.SERVICE_NAME }}
             region: ${{ secrets.CLOUD_RUN_REGION }}
             image: ${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.IMAGE_NAME }}:${{ github.sha }}
