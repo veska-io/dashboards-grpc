@@ -39,6 +39,11 @@ jobs:
           id: deploy
           uses: 'google-github-actions/deploy-cloudrun@v2'
           with:
+            env_vars: |
+              DASHBOARDS_DEBUG=${{ vars.DEBUG }}
+              DASHBOARDS_STORAGE_CLICKHOUSE_HOST=${{ secrets.CLICKHOUSE_HOST }}
+              DASHBOARDS_STORAGE_CLICKHOUSE_PORT=${{ secrets.CLICKHOUSE_PORT }}
+              DASHBOARDS_STORAGE_CLICKHOUSE_PASSWORD=${{ secrets.CLICKHOUSE_PASSWORD }}
             service: ${{ secrets.SERVICE_NAME }}
             region: ${{ secrets.CLOUD_RUN_REGION }}
             image: ${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
