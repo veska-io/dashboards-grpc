@@ -7,6 +7,8 @@ import (
 
 	dbrds_grpc "github.com/veska-io/grpc-dashboards-public/src/grpc/dashboards"
 	"google.golang.org/grpc"
+
+	"github.com/veska-io/grpc-dashboards-public/src/storage"
 )
 
 type GrpcApp struct {
@@ -16,10 +18,10 @@ type GrpcApp struct {
 	GrpcServer *grpc.Server
 }
 
-func New(port int, logger *slog.Logger) *GrpcApp {
+func New(port int, strg *storage.Storage, logger *slog.Logger) *GrpcApp {
 	gRPCServer := grpc.NewServer()
 
-	dbrds_grpc.Register(gRPCServer, logger)
+	dbrds_grpc.Register(gRPCServer, strg, logger)
 
 	return &GrpcApp{
 		logger: logger,

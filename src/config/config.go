@@ -14,15 +14,26 @@ import (
 )
 
 const (
+	DEFAULT_DEBUG = false
+
 	DEFAULT_GRPC_PORT    = 44044
 	DEFAULT_GRPC_TIMEOUT = "5s"
-	DEFAULT_DEBUG        = false
+
+	DEFAULT_CLICKHOUSE_DB   = "default"
+	DEFAULT_CLICKHOUSE_USER = "default"
 )
 
 type Config struct {
-	Debug       bool   `koanf:"DASHBOARDS_DEBUG"`
+	Debug bool `koanf:"DASHBOARDS_DEBUG"`
+
 	GrpcPort    int    `koanf:"DASHBOARDS_GRPC_PORT"`
 	GrpcTimeout string `koanf:"DASHBOARDS_GRPC_TIMEOUT"`
+
+	ClickhouseHost     string `koanf:"DASHBOARDS_STORAGE_CLICKHOUSE_HOST"`
+	ClickhousePort     int    `koanf:"DASHBOARDS_STORAGE_CLICKHOUSE_PORT"`
+	ClickhouseDb       string `koanf:"DASHBOARDS_STORAGE_CLICKHOUSE_DB"`
+	ClickhouseUser     string `koanf:"DASHBOARDS_STORAGE_CLICKHOUSE_USER"`
+	ClickhousePassword string `koanf:"DASHBOARDS_STORAGE_CLICKHOUSE_PASSWORD"`
 }
 
 func MustNew() *Config {
@@ -51,9 +62,13 @@ func MustNew() *Config {
 
 func mustLoadDefaults(k *koanf.Koanf) {
 	err := k.Load(confmap.Provider(map[string]interface{}{
-		"DASHBOARDS_DEBUG":        DEFAULT_DEBUG,
+		"DASHBOARDS_DEBUG": DEFAULT_DEBUG,
+
 		"DASHBOARDS_GRPC_PORT":    DEFAULT_GRPC_PORT,
 		"DASHBOARDS_GRPC_TIMEOUT": DEFAULT_GRPC_TIMEOUT,
+
+		"DASHBOARDS_STORAGE_CLICKHOUSE_DB":   DEFAULT_CLICKHOUSE_DB,
+		"DASHBOARDS_STORAGE_CLICKHOUSE_USER": DEFAULT_CLICKHOUSE_USER,
 	}, "."), nil)
 	if err != nil {
 		panic(fmt.Errorf("error while loading config defaults: %w", err))
