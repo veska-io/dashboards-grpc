@@ -116,7 +116,7 @@ func (s *dashboardsServer) GetPriceDiff(
 		}
 
 		response.Points = append(response.Points, &dpgen.Point{
-			Timestamp: diff.Timestamp.Unix(),
+			Timestamp: diff.Timestamp.UnixMilli(),
 			Market:    diff.Market,
 			Value:     diff.Value,
 		})
