@@ -144,7 +144,7 @@ func ParseTime(t int64) time.Time {
 }
 
 func ParseRepeatedValue(e []string) []string {
-	if len(e) == 1 && e[0] == "0" {
+	if len(e) == 1 && e[0] == "-1" {
 		return []string{}
 	}
 
