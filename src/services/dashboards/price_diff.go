@@ -39,6 +39,8 @@ func GetPriceDiff(
 	logger *slog.Logger,
 	ctx context.Context,
 ) (<-chan PriceDiff, error) {
+	logger.Debug("executing query", slog.Any("filter", filter))
+
 	responseChan := make(chan PriceDiff)
 
 	diffQuery, err := BuildDiffQuery(filter)
