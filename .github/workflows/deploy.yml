@@ -44,6 +44,7 @@ jobs:
               DASHBOARDS_STORAGE_CLICKHOUSE_HOST=${{ secrets.CLICKHOUSE_HOST }}
               DASHBOARDS_STORAGE_CLICKHOUSE_PORT=${{ secrets.CLICKHOUSE_PORT }}
               DASHBOARDS_STORAGE_CLICKHOUSE_PASSWORD=${{ secrets.CLICKHOUSE_PASSWORD }}
+              ESPv2_ARGS=--envoy_connection_buffer_limit_bytes=1024
             service: ${{ secrets.SERVICE_NAME }}
             region: ${{ secrets.CLOUD_RUN_REGION }}
             image: ${{ secrets.ARTIFACT_REGISTRY }}/${{ secrets.GCP_PROJECT }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
