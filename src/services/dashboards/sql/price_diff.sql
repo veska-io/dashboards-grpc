@@ -1,4 +1,11 @@
-WITH exchange_data_frame as (
+WITH exchanges as (
+	SELECT lower(arrayJoin(@exchanges)) as exchange
+),
+markets as (
+	SELECT upper(arrayJoin(@markets)) as market 
+),
+
+exchange_data_frame as (
 	SELECT
 		date_time datetime,
 		exchange,
@@ -10,13 +17,10 @@ WITH exchange_data_frame as (
 		FROM
 			candles_1h
 		WHERE
-			market in @markets
-			AND
-			exchange = @exchange
-			AND
 			date_time >= date_sub(hour, 2*@windowSize, @startTime)
-			AND
-			date_time <= @endTime
+			AND date_time <= @endTime
+			{{ with .Markets }} AND market in (SELECT market FROM markets) {{ end }}
+			{{ with .Exchanges }} AND exchange in (SELECT exchange FROM exchanges) {{ end }}
 		ORDER BY
 			date_time DESC, updated_at DESC
 	)
@@ -64,5 +68,6 @@ SELECT
 FROM pre_load
 WHERE
 	datetime >= @startTime
+HAVING min2(c_cur, c_prev) / max2(c_cur, c_prev) > 0.9
 
 ORDER BY time ASC

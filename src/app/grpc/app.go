@@ -1,14 +1,13 @@
 package grpc_app
 
 import (
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"net"
 
 	dbrds_grpc "github.com/veska-io/grpc-dashboards-public/src/grpc/dashboards"
 	"google.golang.org/grpc"
-
-	"github.com/veska-io/grpc-dashboards-public/src/storage"
 )
 
 type GrpcApp struct {
@@ -18,10 +17,10 @@ type GrpcApp struct {
 	GrpcServer *grpc.Server
 }
 
-func New(port int, strg *storage.Storage, logger *slog.Logger) *GrpcApp {
+func New(port int, maxDataCorrupt int16, strg *sql.DB, logger *slog.Logger) *GrpcApp {
 	gRPCServer := grpc.NewServer()
 
-	dbrds_grpc.Register(gRPCServer, strg, logger)
+	dbrds_grpc.Register(gRPCServer, strg, logger, maxDataCorrupt)
 
 	return &GrpcApp{
 		logger: logger,

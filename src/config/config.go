@@ -21,6 +21,8 @@ const (
 
 	DEFAULT_CLICKHOUSE_DB   = "default"
 	DEFAULT_CLICKHOUSE_USER = "default"
+
+	DEFAULT_MAXIMUM_DATA_CORRUPT = 5
 )
 
 type Config struct {
@@ -34,6 +36,8 @@ type Config struct {
 	ClickhouseDb       string `koanf:"DASHBOARDS_STORAGE_CLICKHOUSE_DB"`
 	ClickhouseUser     string `koanf:"DASHBOARDS_STORAGE_CLICKHOUSE_USER"`
 	ClickhousePassword string `koanf:"DASHBOARDS_STORAGE_CLICKHOUSE_PASSWORD"`
+
+	MaximumDataCorrupt int16 `koanf:"DASHBOARDS_MAXIMUM_DATA_CORRUPT"`
 }
 
 func MustNew() *Config {
@@ -69,6 +73,8 @@ func mustLoadDefaults(k *koanf.Koanf) {
 
 		"DASHBOARDS_STORAGE_CLICKHOUSE_DB":   DEFAULT_CLICKHOUSE_DB,
 		"DASHBOARDS_STORAGE_CLICKHOUSE_USER": DEFAULT_CLICKHOUSE_USER,
+
+		"DASHBOARDS_MAXIMUM_DATA_CORRUPT": DEFAULT_MAXIMUM_DATA_CORRUPT,
 	}, "."), nil)
 	if err != nil {
 		panic(fmt.Errorf("error while loading config defaults: %w", err))

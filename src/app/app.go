@@ -1,12 +1,13 @@
 package app
 
 import (
+	"database/sql"
 	"fmt"
 	"log/slog"
 
 	grpc_app "github.com/veska-io/grpc-dashboards-public/src/app/grpc"
 	"github.com/veska-io/grpc-dashboards-public/src/config"
-	"github.com/veska-io/grpc-dashboards-public/src/storage"
+	"github.com/veska-io/grpc-dashboards-public/src/storage/clickhouse"
 )
 
 type App struct {
@@ -14,18 +15,18 @@ type App struct {
 	Logger *slog.Logger
 
 	GrpcApp *grpc_app.GrpcApp
-	Storage *storage.Storage
+	Storage *sql.DB
 }
 
 func New(cfg *config.Config, logger *slog.Logger) *App {
-	strg := storage.New(
+	strg := clickhouse.New(
 		fmt.Sprintf("%s:%d", cfg.ClickhouseHost, cfg.ClickhousePort),
 		cfg.ClickhouseDb,
 		cfg.ClickhouseUser,
 		cfg.ClickhousePassword,
 		logger,
 	)
-	gRpcApp := grpc_app.New(cfg.GrpcPort, strg, logger)
+	gRpcApp := grpc_app.New(cfg.GrpcPort, cfg.MaximumDataCorrupt, strg, logger)
 
 	return &App{
 		Config: cfg,
