@@ -71,7 +71,7 @@ func (s *dashboardsServer) GetMarkets(
 		response.Markets = append(response.Markets, market.Name)
 	}
 
-	if float64(errors/len(response.Markets)) > float64(s.maxDataCorrupt/100) {
+	if errors != 0 && float64(errors/len(response.Markets)) > float64(s.maxDataCorrupt/100) {
 		s.Logger.Error("too many errors processing markets")
 		return nil, status.Error(codes.Internal, "unable to process the request")
 	}
@@ -122,7 +122,7 @@ func (s *dashboardsServer) GetPriceDiff(
 		})
 	}
 
-	if float64(errors/len(response.Points)) > float64(s.maxDataCorrupt/100) {
+	if errors != 0 && float64(errors/len(response.Points)) > float64(s.maxDataCorrupt/100) {
 		s.Logger.Error("too many errors processing price diff")
 		return nil, status.Error(codes.Internal, "unable to process the request")
 	}
