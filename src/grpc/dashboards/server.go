@@ -48,7 +48,7 @@ func (s *dashboardsServer) GetMarkets(
 	response := dpgen.MarketsResponse{}
 
 	marketsChan, err := dashboards.GetMarkets(dashboards.MarketsFilter{
-		Exchanges:  in.GetExchanges(),
+		Exchanges:  ParseExchanges(in.GetExchanges()),
 		Markets:    in.GetMarkets(),
 		StartTime:  ParseTime(in.GetStart()),
 		EndTime:    ParseTime(in.GetEnd()),
@@ -96,7 +96,7 @@ func (s *dashboardsServer) GetPriceDiff(
 	response := dpgen.BasicResponse{}
 
 	diffsChan, err := dashboards.GetPriceDiff(dashboards.PriceDiffFilter{
-		Exchanges:  in.GetExchanges(),
+		Exchanges:  ParseExchanges(in.GetExchanges()),
 		Markets:    in.GetMarkets(),
 		StartTime:  ParseTime(in.GetStart()),
 		EndTime:    ParseTime(in.GetEnd()),
@@ -142,4 +142,12 @@ func ParseTime(t int64) time.Time {
 	)
 
 	return toHourDate
+}
+
+func ParseExchanges(e []string) []string {
+	if len(e) == 1 && e[0] == "0" {
+		return []string{}
+	}
+
+	return e
 }
