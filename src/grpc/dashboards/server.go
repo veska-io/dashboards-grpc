@@ -124,7 +124,7 @@ func (s *dashboardsServer) GetPriceDiff(
 		response.Points = append(response.Points, &dpgen.Point{
 			Timestamp: diff.Timestamp.UnixMilli(),
 			Market:    diff.Market,
-			Value:     diff.Value,
+			Value:     ParseValue(diff.Value),
 		})
 	}
 
@@ -209,4 +209,12 @@ func ValidateWindowSize(windowSize int32, start, end time.Time) error {
 	}
 
 	return nil
+}
+
+func ParseValue(v float64) float64 {
+	if v == 0 {
+		return 0.00000000000000001
+	}
+
+	return v
 }
