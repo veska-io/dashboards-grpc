@@ -17,11 +17,12 @@ import (
 var priceDiffTemplate string
 
 type PriceDiffFilter struct {
-	Exchanges  []string
-	Markets    []string
-	StartTime  time.Time
-	EndTime    time.Time
-	WindowSize int32
+	Exchanges   []string
+	Markets     []string
+	StartTime   time.Time
+	EndTime     time.Time
+	WindowSize  int32
+	Granularity string
 }
 
 type PriceDiff struct {

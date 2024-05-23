@@ -3,6 +3,7 @@ package dbrds_grpc
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -93,13 +94,19 @@ func (s *dashboardsServer) GetPriceDiff(
 	s.Logger.Debug("received price diff request")
 
 	response := dpgen.BasicResponse{}
+	err := ValidateWindowSize(in.GetWindowSize(), ParseTime(in.GetStart()), ParseTime(in.GetEnd()))
+	if err != nil {
+		s.Logger.Error("validation error", slog.String("err", err.Error()))
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
 	diffsChan, err := dashboards.GetPriceDiff(dashboards.PriceDiffFilter{
-		Exchanges:  ParseRepeatedValue(in.GetExchanges()),
-		Markets:    ParseRepeatedValue(in.GetMarkets()),
-		StartTime:  ParseTime(in.GetStart()),
-		EndTime:    ParseTime(in.GetEnd()),
-		WindowSize: in.GetWindowSize(),
+		Exchanges:   ParseRepeatedValue(in.GetExchanges()),
+		Markets:     ParseRepeatedValue(in.GetMarkets()),
+		StartTime:   ParseTime(in.GetStart()),
+		EndTime:     ParseTime(in.GetEnd()),
+		WindowSize:  in.GetWindowSize(),
+		Granularity: ParseGranularity(ParseTime(in.GetStart()), ParseTime(in.GetEnd())),
 	}, s.Storage, s.Logger, ctx)
 	if err != nil {
 		s.Logger.Error("unable to process the request", slog.String("err", err.Error()))
@@ -149,4 +156,57 @@ func ParseRepeatedValue(e []string) []string {
 	}
 
 	return e
+}
+
+func ParseGranularity(start, end time.Time) string {
+	pointsOnScreen := 168
+
+	diffHours := end.Sub(start).Hours()
+
+	if diffHours <= float64(pointsOnScreen) {
+		return "1 hour"
+	} else if diffHours <= float64(pointsOnScreen*4) {
+		return "4 hour"
+	} else if diffHours <= float64(pointsOnScreen*8) {
+		return "8 hour"
+	} else if diffHours <= float64(pointsOnScreen*24) {
+		return "1 day"
+	} else if diffHours <= float64(pointsOnScreen*24*7) {
+		return "7 day"
+	} else {
+		return "1 month"
+	}
+}
+
+func ValidateWindowSize(windowSize int32, start, end time.Time) error {
+	pointsOnScreen := 168
+	diffHours := end.Sub(start).Hours()
+
+	if diffHours <= float64(pointsOnScreen) {
+		if windowSize < 1 {
+			return fmt.Errorf("too small window size for the selected time range")
+		}
+	} else if diffHours <= float64(pointsOnScreen*4) {
+		if windowSize < 4 {
+			return fmt.Errorf("too small window size for the selected time range")
+		}
+	} else if diffHours <= float64(pointsOnScreen*8) {
+		if windowSize < 8 {
+			return fmt.Errorf("too small window size for the selected time range")
+		}
+	} else if diffHours <= float64(pointsOnScreen*24) {
+		if windowSize < 24 {
+			return fmt.Errorf("too small window size for the selected time range")
+		}
+	} else if diffHours <= float64(pointsOnScreen*24*7) {
+		if windowSize < 24*7 {
+			return fmt.Errorf("too small window size for the selected time range")
+		}
+	} else {
+		if windowSize < 24*30 {
+			return fmt.Errorf("too small window size for the selected time range")
+		}
+	}
+
+	return nil
 }

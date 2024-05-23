@@ -5,9 +5,10 @@ markets as (
 	SELECT upper(arrayJoin(@markets)) as market 
 ),
 
-exchange_data_frame as (
+raw_data_frame as (
 	SELECT
-		date_time datetime,
+		date_time,
+		toStartOfInterval(date_time, INTERVAL {{ .Granularity }}) as grouped_datetime,
 		exchange,
 		market,
 		groupArray(close)[1] as price
@@ -26,6 +27,18 @@ exchange_data_frame as (
 	)
 
 	GROUP BY date_time, exchange, market
+),
+
+exchange_data_frame as (
+	SELECT
+		grouped_datetime as datetime,
+		exchange,
+		market,
+		avg(price) as price
+	FROM
+		raw_data_frame
+	GROUP BY
+		grouped_datetime, exchange, market
 ),
 
 pre_load AS (
