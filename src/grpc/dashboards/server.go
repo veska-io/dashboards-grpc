@@ -43,7 +43,7 @@ func (s *dashboardsServer) Status(ctx context.Context, in *emptypb.Empty) (*empt
 func (s *dashboardsServer) GetMarkets(
 	ctx context.Context, in *dpgen.BasicRequest,
 ) (*dpgen.MarketsResponse, error) {
-	s.Logger.Debug("received markets request")
+	s.Logger.Debug("received markets request", slog.Any("request", in))
 
 	response := dpgen.MarketsResponse{}
 
@@ -96,7 +96,7 @@ func (s *dashboardsServer) GetExchanges(
 
 func (s *dashboardsServer) GetOhlcvDiff(
 	ctx context.Context, in *dpgen.BasicRequest) (*dpgen.OhlcvDiffResponse, error) {
-	s.Logger.Debug("received price diff request")
+	s.Logger.Debug("received price diff request", slog.Any("request", in))
 
 	response := dpgen.OhlcvDiffResponse{}
 

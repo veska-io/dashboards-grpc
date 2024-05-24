@@ -26,7 +26,7 @@ func NewBasicRequest(in *dpgen.BasicRequest) (*BasicRequest, error) {
 		WindowSize: parseWindowSize(in.GetWindowSize(), in.GetWindowUnit()),
 	}
 
-	err := ValidateWindowSize(in.GetWindowSize(), ParseTime(in.GetStart()), ParseTime(in.GetEnd()))
+	err := ValidateWindowSize(request.WindowSize, request.StartTime, request.EndTime)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -35,16 +35,17 @@ func NewBasicRequest(in *dpgen.BasicRequest) (*BasicRequest, error) {
 }
 
 func parseWindowSize(i int32, windowUnit dpgen.WindowUnit) int32 {
-	switch windowUnit {
-	case dpgen.WindowUnit_DAYS:
+	if windowUnit == dpgen.WindowUnit_DAYS {
 		return i * 24
-	case dpgen.WindowUnit_WEEKS:
-		return i * 24 * 7
-	case dpgen.WindowUnit_MONTHS:
-		return i * 24 * 30
-	default:
-		return i
 	}
+	if windowUnit == dpgen.WindowUnit_WEEKS {
+		return i * 24 * 7
+	}
+	if windowUnit == dpgen.WindowUnit_MONTHS {
+		return i * 24 * 30
+	}
+
+	return i
 }
 
 func ValidateWindowSize(windowSize int32, start, end time.Time) error {
