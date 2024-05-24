@@ -26,9 +26,10 @@ type PriceDiffFilter struct {
 }
 
 type PriceDiff struct {
-	Timestamp time.Time
-	Market    string
-	Value     float64
+	Timestamp   time.Time
+	Market      string
+	Price       float64
+	VolumeToken float64
 
 	Err error
 }
@@ -73,7 +74,9 @@ func GetPriceDiff(
 				return
 			default:
 				diff := PriceDiff{}
-				if err := rows.Scan(&diff.Timestamp, &diff.Market, &diff.Value); err != nil {
+
+				err := rows.Scan(&diff.Timestamp, &diff.Market, &diff.Price, &diff.VolumeToken)
+				if err != nil {
 					diff.Err = fmt.Errorf("unable to scan row: %w", err)
 				}
 

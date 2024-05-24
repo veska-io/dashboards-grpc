@@ -3,10 +3,9 @@ package dbrds_grpc
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log/slog"
-	"time"
 
+	"github.com/veska-io/grpc-dashboards-public/src/grpc/dashboards/serializers"
 	dashboards "github.com/veska-io/grpc-dashboards-public/src/services/dashboards"
 	dpgen "github.com/veska-io/proto-dashboards-public/gen/go/dashboards"
 	"google.golang.org/grpc"
@@ -48,11 +47,17 @@ func (s *dashboardsServer) GetMarkets(
 
 	response := dpgen.MarketsResponse{}
 
+	serializedRequest, err := serializers.NewBasicRequest(in)
+	if err != nil {
+		s.Logger.Error("unable to process the request", slog.String("err", err.Error()))
+		return nil, status.Error(codes.InvalidArgument, "unable to process the request")
+	}
+
 	marketsChan, err := dashboards.GetMarkets(dashboards.MarketsFilter{
-		Exchanges:  ParseRepeatedValue(in.GetExchanges()),
-		StartTime:  ParseTime(in.GetStart()),
-		EndTime:    ParseTime(in.GetEnd()),
-		WindowSize: in.GetWindowSize(),
+		Exchanges:  serializedRequest.Exchanges,
+		StartTime:  serializedRequest.StartTime,
+		EndTime:    serializedRequest.EndTime,
+		WindowSize: serializedRequest.WindowSize,
 	}, s.Storage, s.Logger, ctx)
 
 	if err != nil {
@@ -89,24 +94,25 @@ func (s *dashboardsServer) GetExchanges(
 	return &dpgen.ExchangesResponse{Exchanges: response}, nil
 }
 
-func (s *dashboardsServer) GetPriceDiff(
-	ctx context.Context, in *dpgen.BasicRequest) (*dpgen.BasicResponse, error) {
+func (s *dashboardsServer) GetOhlcvDiff(
+	ctx context.Context, in *dpgen.BasicRequest) (*dpgen.OhlcvDiffResponse, error) {
 	s.Logger.Debug("received price diff request")
 
-	response := dpgen.BasicResponse{}
-	err := ValidateWindowSize(in.GetWindowSize(), ParseTime(in.GetStart()), ParseTime(in.GetEnd()))
+	response := dpgen.OhlcvDiffResponse{}
+
+	serializedRequest, err := serializers.NewBasicRequest(in)
 	if err != nil {
-		s.Logger.Error("validation error", slog.String("err", err.Error()))
-		return nil, status.Error(codes.Internal, err.Error())
+		s.Logger.Error("unable to process the request", slog.String("err", err.Error()))
+		return nil, status.Error(codes.InvalidArgument, "unable to process the request")
 	}
 
 	diffsChan, err := dashboards.GetPriceDiff(dashboards.PriceDiffFilter{
-		Exchanges:   ParseRepeatedValue(in.GetExchanges()),
-		Markets:     ParseRepeatedValue(in.GetMarkets()),
-		StartTime:   ParseTime(in.GetStart()),
-		EndTime:     ParseTime(in.GetEnd()),
-		WindowSize:  in.GetWindowSize(),
-		Granularity: ParseGranularity(ParseTime(in.GetStart()), ParseTime(in.GetEnd())),
+		Exchanges:   serializedRequest.Exchanges,
+		Markets:     serializedRequest.Markets,
+		StartTime:   serializedRequest.StartTime,
+		EndTime:     serializedRequest.EndTime,
+		WindowSize:  serializedRequest.WindowSize,
+		Granularity: ParseGranularity(serializedRequest.StartTime, serializedRequest.EndTime),
 	}, s.Storage, s.Logger, ctx)
 	if err != nil {
 		s.Logger.Error("unable to process the request", slog.String("err", err.Error()))
@@ -121,10 +127,11 @@ func (s *dashboardsServer) GetPriceDiff(
 			continue
 		}
 
-		response.Points = append(response.Points, &dpgen.Point{
-			Timestamp: diff.Timestamp.UnixMilli(),
-			Market:    diff.Market,
-			Value:     ParseValue(diff.Value),
+		response.Points = append(response.Points, &dpgen.OhlcvDiff{
+			Timestamp:   diff.Timestamp.UnixMilli(),
+			Market:      diff.Market,
+			Avg:         ShieldZeros(diff.Price),
+			VolumeToken: ShieldZeros(diff.VolumeToken),
 		})
 	}
 
@@ -134,87 +141,4 @@ func (s *dashboardsServer) GetPriceDiff(
 	}
 
 	return &response, nil
-}
-
-func ParseTime(t int64) time.Time {
-	rawDate := time.Unix(0, t*int64(time.Millisecond))
-	toHourDate := time.Date(
-		rawDate.Year(),
-		rawDate.Month(),
-		rawDate.Day(),
-		rawDate.Hour(),
-		0, 0, 0,
-		time.UTC,
-	)
-
-	return toHourDate
-}
-
-func ParseRepeatedValue(e []string) []string {
-	if len(e) == 1 && e[0] == "-1" {
-		return []string{}
-	}
-
-	return e
-}
-
-func ParseGranularity(start, end time.Time) string {
-	pointsOnScreen := 168
-
-	diffHours := end.Sub(start).Hours()
-
-	if diffHours <= float64(pointsOnScreen) {
-		return "1 hour"
-	} else if diffHours <= float64(pointsOnScreen*4) {
-		return "4 hour"
-	} else if diffHours <= float64(pointsOnScreen*8) {
-		return "8 hour"
-	} else if diffHours <= float64(pointsOnScreen*24) {
-		return "1 day"
-	} else if diffHours <= float64(pointsOnScreen*24*7) {
-		return "7 day"
-	} else {
-		return "1 month"
-	}
-}
-
-func ValidateWindowSize(windowSize int32, start, end time.Time) error {
-	pointsOnScreen := 168
-	diffHours := end.Sub(start).Hours()
-
-	if diffHours <= float64(pointsOnScreen) {
-		if windowSize < 1 {
-			return fmt.Errorf("too small window size for the selected time range")
-		}
-	} else if diffHours <= float64(pointsOnScreen*4) {
-		if windowSize < 4 {
-			return fmt.Errorf("too small window size for the selected time range")
-		}
-	} else if diffHours <= float64(pointsOnScreen*8) {
-		if windowSize < 8 {
-			return fmt.Errorf("too small window size for the selected time range")
-		}
-	} else if diffHours <= float64(pointsOnScreen*24) {
-		if windowSize < 24 {
-			return fmt.Errorf("too small window size for the selected time range")
-		}
-	} else if diffHours <= float64(pointsOnScreen*24*7) {
-		if windowSize < 24*7 {
-			return fmt.Errorf("too small window size for the selected time range")
-		}
-	} else {
-		if windowSize < 24*30 {
-			return fmt.Errorf("too small window size for the selected time range")
-		}
-	}
-
-	return nil
-}
-
-func ParseValue(v float64) float64 {
-	if v == 0 {
-		return 0.00000000000000001
-	}
-
-	return v
 }

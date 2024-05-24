@@ -11,7 +11,10 @@ raw_data_frame as (
 		toStartOfInterval(date_time, INTERVAL {{ .Granularity }}) as grouped_datetime,
 		exchange,
 		market,
-		groupArray(close)[1] as price
+		groupArray((close+open)/2)[1] as price,
+		groupArray(volume_usd)[1] as volume_usd,
+		groupArray(volume_token)[1] as volume_token
+
 	FROM (
 		SELECT
 			*
@@ -34,7 +37,8 @@ exchange_data_frame as (
 		grouped_datetime as datetime,
 		exchange,
 		market,
-		avg(price) as price
+		avg(price) as price,
+		sum(volume_token) as volume_token
 	FROM
 		raw_data_frame
 	GROUP BY
@@ -70,14 +74,28 @@ pre_load AS (
 				toUInt64((2*(@windowSize)*60*60)-(60*60)) PRECEDING
 				AND
 				toUInt64((@windowSize)*60*60) PRECEDING
-			) AS c_prev
+			) AS c_prev,
+		SUM(volume_token) OVER (
+			PARTITION BY market
+			ORDER BY datetime ASC
+			RANGE BETWEEN toUInt64((@windowSize-1)*60*60) PRECEDING AND CURRENT ROW
+			) AS sum_v_cur,
+		SUM(volume_token) OVER (
+			PARTITION BY market
+			ORDER BY datetime ASC
+			RANGE BETWEEN
+				toUInt64((2*(@windowSize)*60*60)-(60*60)) PRECEDING
+				AND
+				toUInt64((@windowSize)*60*60) PRECEDING
+			) AS sum_v_prev
 	FROM  exchange_data_frame
 )
 
 SELECT
 	datetime as time,
 	market,
-	(GREATEST(0, sum_cur - sum_prev) - GREATEST(0, sum_prev - sum_cur)) / sum_prev as "_"
+	(GREATEST(0, sum_cur - sum_prev) - GREATEST(0, sum_prev - sum_cur)) / sum_prev as price_diff,
+	(GREATEST(0, sum_v_cur - sum_v_prev) - GREATEST(0, sum_v_prev - sum_v_cur)) / sum_v_prev as volume_diff
 FROM pre_load
 WHERE
 	datetime >= @startTime

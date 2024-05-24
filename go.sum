@@ -102,6 +102,10 @@ github.com/veska-io/proto-dashboards-public v0.0.2 h1:a1Y5Eej8QwVics4uxbHgH1hx+y
 github.com/veska-io/proto-dashboards-public v0.0.2/go.mod h1:h/u93yu6AN8izN8Vok7yg+XsakRR+mhFXZ8BxvjkY5g=
 github.com/veska-io/proto-dashboards-public v0.0.3 h1:R3gAHItDUr0iTY6xVI7FVRW46ONkGOCHDfygoQASabo=
 github.com/veska-io/proto-dashboards-public v0.0.3/go.mod h1:h/u93yu6AN8izN8Vok7yg+XsakRR+mhFXZ8BxvjkY5g=
+github.com/veska-io/proto-dashboards-public v0.0.4 h1:Mq5kt2lKNerHqcFnGC4tJSqvpG14592/IHXyV5UY9oY=
+github.com/veska-io/proto-dashboards-public v0.0.4/go.mod h1:h/u93yu6AN8izN8Vok7yg+XsakRR+mhFXZ8BxvjkY5g=
+github.com/veska-io/proto-dashboards-public v0.0.5 h1:8j9CeDbOvUE0JS0boqMbrpBrLS4IOCRyh76tXe7Li4I=
+github.com/veska-io/proto-dashboards-public v0.0.5/go.mod h1:h/u93yu6AN8izN8Vok7yg+XsakRR+mhFXZ8BxvjkY5g=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.1.1/go.mod h1:RaEWvsqvNKKvBPvcKeFjrG2cJqOkHTiyTpzz23ni57g=
 github.com/xdg-go/stringprep v1.0.3/go.mod h1:W3f5j4i+9rC0kuIEJL0ky1VpHXQU3ocBgklLGvcBnW8=
