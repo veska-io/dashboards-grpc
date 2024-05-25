@@ -99,6 +99,6 @@ SELECT
 FROM pre_load
 WHERE
 	datetime >= @startTime
-HAVING min2(c_cur, c_prev) / max2(c_cur, c_prev) > 0.9
+HAVING min2(c_cur, c_prev) / max2(c_cur, c_prev) > 0.98
 
 ORDER BY time ASC
