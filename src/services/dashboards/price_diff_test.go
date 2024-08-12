@@ -3,7 +3,7 @@ package dashboards_test
 import (
 	"testing"
 
-	"github.com/veska-io/grpc-dashboards-public/src/services/dashboards"
+	"github.com/veska-io/dashboards-grpc/src/services/dashboards"
 )
 
 func TestBuildDiffQuery(t *testing.T) {

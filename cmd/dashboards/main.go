@@ -6,9 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/veska-io/grpc-dashboards-public/src/app"
-	"github.com/veska-io/grpc-dashboards-public/src/config"
-	"github.com/veska-io/grpc-dashboards-public/src/logger"
+	"github.com/veska-io/dashboards-grpc/src/app"
+	"github.com/veska-io/dashboards-grpc/src/config"
+	"github.com/veska-io/dashboards-grpc/src/logger"
 )
 
 func main() {

@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net"
 
-	dbrds_grpc "github.com/veska-io/grpc-dashboards-public/src/grpc/dashboards"
+	dbrds_grpc "github.com/veska-io/dashboards-grpc/src/grpc/dashboards"
 	"google.golang.org/grpc"
 )
 

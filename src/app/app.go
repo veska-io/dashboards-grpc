@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	grpc_app "github.com/veska-io/grpc-dashboards-public/src/app/grpc"
-	"github.com/veska-io/grpc-dashboards-public/src/config"
-	"github.com/veska-io/grpc-dashboards-public/src/storage/clickhouse"
+	grpc_app "github.com/veska-io/dashboards-grpc/src/app/grpc"
+	"github.com/veska-io/dashboards-grpc/src/config"
+	"github.com/veska-io/dashboards-grpc/src/storage/clickhouse"
 )
 
 type App struct {

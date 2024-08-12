@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	dashboards "github.com/veska-io/grpc-dashboards-public/src/services/dashboards"
-	dpgen "github.com/veska-io/proto-dashboards-public/gen/go/dashboards"
+	dashboards "github.com/veska-io/dashboards-grpc/src/services/dashboards"
+	dpgen "github.com/veska-io/dashboards-proto/gen/go/dashboards"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
